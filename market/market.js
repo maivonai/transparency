@@ -8,7 +8,7 @@ const LS_FAVORITES = 'tgifts_market_favorites_v1';
 const LS_ACTIVITY = 'tgifts_market_activity_v1';
 const LS_OWNED = 'tgifts_market_owned_v1';
 
-// ВСЕ ТОКЕНЫ ОТПРАВЛЯЮТСЯ НА ЭТОТ АДРЕС (ВАШ КОШЕЛЕК)
+// кошелёк владельца маркетплейса (ВАШ)
 const MARKET_OWNER_ADDRESS = 'UQDLUQwxUttwdqd4VBOpqAAHwzPH_O7QTCVhCceKuDyh-DKI';
 
 const MOCK_MARKET = [
@@ -62,6 +62,7 @@ export function initMarketPages(root, callbacks) {
   CALLBACKS = { ...CALLBACKS, ...callbacks };
   root.innerHTML = '';
 
+  // только три страницы под новый bottom‑nav
   const marketPage = document.createElement('section');
   marketPage.className = 'page active';
   marketPage.dataset.page = 'market';
@@ -74,30 +75,12 @@ export function initMarketPages(root, callbacks) {
   activityPage.className = 'page';
   activityPage.dataset.page = 'activity';
 
-  const auctionsPage = document.createElement('section');
-  auctionsPage.className = 'page';
-  auctionsPage.dataset.page = 'auctions';
-
-  const leasePage = document.createElement('section');
-  leasePage.className = 'page';
-  leasePage.dataset.page = 'lease';
-
-  const galleryPage = document.createElement('section');
-  galleryPage.className = 'page';
-  galleryPage.dataset.page = 'gallery';
-
   buildMarketPage(marketPage);
   buildMyGiftsPage(myGiftsPage);
   buildActivityPage(activityPage);
-  buildPlaceholder(auctionsPage, 'Auctions coming soon');
-  buildPlaceholder(leasePage, 'Lease coming soon');
-  buildPlaceholder(galleryPage, 'Gallery coming soon');
 
   root.appendChild(marketPage);
-  root.appendChild(auctionsPage);
-  root.appendChild(leasePage);
   root.appendChild(myGiftsPage);
-  root.appendChild(galleryPage);
   root.appendChild(activityPage);
 
   refreshOwnedAndActivity();
@@ -151,6 +134,7 @@ function renderSkeletonGrid(root) {
   for (let i = 0; i < 6; i++) {
     const card = document.createElement('div');
     card.className = 'gift-card';
+
     const top = document.createElement('div');
     top.className = 'gift-card-header';
     const s1 = document.createElement('div');
@@ -222,7 +206,7 @@ function getFavorites() {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -237,7 +221,7 @@ function getOwned() {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -252,7 +236,7 @@ function getActivity() {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -312,7 +296,7 @@ async function handleBuy(gift) {
     onConfirm: async (close) => {
       try {
         await sendTonTransaction({
-          to: MARKET_OWNER_ADDRESS, // все TON идут на ваш кошелек
+          to: MARKET_OWNER_ADDRESS,
           amountTon: gift.price,
           payload: ''
         });
@@ -486,25 +470,6 @@ function buildActivityPage(page) {
   list.className = 'activity-list';
   list.dataset.role = 'activity-list';
   page.appendChild(list);
-}
-
-function buildPlaceholder(page, text) {
-  const header = document.createElement('div');
-  header.className = 'section-header';
-  const title = document.createElement('div');
-  title.className = 'section-title';
-  title.textContent = text.split(' ')[0];
-  const subtitle = document.createElement('div');
-  subtitle.className = 'section-subtitle';
-  subtitle.textContent = text;
-  header.appendChild(title);
-  header.appendChild(subtitle);
-  page.appendChild(header);
-
-  const empty = document.createElement('div');
-  empty.className = 'empty-state';
-  empty.innerHTML = '<div class="empty-state-icon">🔧</div><div>Prototype only</div>';
-  page.appendChild(empty);
 }
 
 function renderOwnedGrid() {
