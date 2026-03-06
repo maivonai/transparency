@@ -1,4 +1,4 @@
-export function createGiftCard(gift, { onBuy, onFavoriteToggle, isFavorite }) {
+export function createGiftCard(gift, { onBuy }) {
   const card = document.createElement('div');
   card.className = 'gift-card';
 
@@ -9,20 +9,6 @@ export function createGiftCard(gift, { onBuy, onFavoriteToggle, isFavorite }) {
   col.className = 'gift-collection';
   col.textContent = gift.collection;
   header.appendChild(col);
-
-  const favBtn = document.createElement('button');
-  favBtn.type = 'button';
-  favBtn.className = 'gift-favorite';
-  if (isFavorite) favBtn.classList.add('active');
-  favBtn.innerHTML = isFavorite ? '❤' : '♡';
-  favBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const nowFav = !favBtn.classList.contains('active');
-    favBtn.classList.toggle('active', nowFav);
-    favBtn.innerHTML = nowFav ? '❤' : '♡';
-    onFavoriteToggle(gift, nowFav);
-  });
-  header.appendChild(favBtn);
 
   card.appendChild(header);
 
@@ -40,11 +26,6 @@ export function createGiftCard(gift, { onBuy, onFavoriteToggle, isFavorite }) {
     label.textContent = '🎁';
     media.appendChild(label);
   }
-
-  const chip = document.createElement('div');
-  chip.className = 'gift-label-chip';
-  chip.innerHTML = `<span class="gift-label-dot"></span><span>Gift #${gift.id}</span>`;
-  media.appendChild(chip);
 
   card.appendChild(media);
 
@@ -82,19 +63,13 @@ export function createGiftCard(gift, { onBuy, onFavoriteToggle, isFavorite }) {
   const buyBtn = document.createElement('button');
   buyBtn.type = 'button';
   buyBtn.className = 'gift-buy-button';
-  buyBtn.innerHTML = `<span>Buy</span><span>›</span>`;
+  buyBtn.innerHTML = `<span>Buy</span>`;
   buyBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     onBuy(gift);
   });
 
-  const moreBtn = document.createElement('button');
-  moreBtn.type = 'button';
-  moreBtn.className = 'gift-more-button';
-  moreBtn.textContent = '⋯';
-
   actions.appendChild(buyBtn);
-  actions.appendChild(moreBtn);
   card.appendChild(actions);
 
   return card;
