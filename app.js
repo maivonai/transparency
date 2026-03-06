@@ -6,7 +6,6 @@ import {
   updateHeaderConnectionState,
   setHeaderUser
 } from './ui/header.js';
-import { renderNavbar } from './ui/navbar.js';
 import { initModalSystem, showToast } from './ui/modal.js';
 import { initMarketPages, refreshOwnedAndActivity } from './market/market.js';
 import { fetchBalance } from './ton/tonapi.js';
@@ -39,7 +38,6 @@ async function updateWalletBalance(address) {
 async function bootstrap() {
   const headerRoot = document.getElementById('app-header');
   const mainRoot = document.getElementById('main-content');
-  const navRoot = document.getElementById('bottom-nav');
 
   const tgInfo = initTelegram();
   APP_STATE.user = tgInfo.user;
@@ -56,19 +54,6 @@ async function bootstrap() {
   if (APP_STATE.user) {
     setHeaderUser(APP_STATE.user);
   }
-
-  const navApi = renderNavbar(navRoot, {
-    onTabChange: (tab) => {
-      const pages = mainRoot.querySelectorAll('.page');
-      pages.forEach((page) => {
-        if (page.dataset.page === tab) {
-          page.classList.add('active');
-        } else {
-          page.classList.remove('active');
-        }
-      });
-    }
-  });
 
   initMarketPages(mainRoot, {
     onBuyCompleted: async () => {
@@ -117,8 +102,6 @@ async function bootstrap() {
     updateHeaderConnectionState(true, wallet.addressShort);
     await updateWalletBalance(wallet.address);
   }
-
-  navApi.setActive('market');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
