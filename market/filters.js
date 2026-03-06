@@ -1,8 +1,6 @@
 export const DEFAULT_FILTERS = {
   collection: 'all',
-  sort: 'lowest',
-  searchId: '',
-  maxPrice: ''
+  sort: 'lowest'
 };
 
 export function renderFilters(root, { onChange, collections }) {
@@ -11,6 +9,7 @@ export function renderFilters(root, { onChange, collections }) {
   const bar = document.createElement('div');
   bar.className = 'filters-bar';
 
+  // выбор коллекции
   const collectionSelectWrap = document.createElement('div');
   collectionSelectWrap.className = 'filter-select';
 
@@ -37,6 +36,7 @@ export function renderFilters(root, { onChange, collections }) {
   collectionSelectWrap.appendChild(collectionSelect);
   bar.appendChild(collectionSelectWrap);
 
+  // сортировка по цене / новизне
   const sortChip = document.createElement('button');
   sortChip.type = 'button';
   sortChip.className = 'filter-chip active';
@@ -53,32 +53,6 @@ export function renderFilters(root, { onChange, collections }) {
   });
   bar.appendChild(sortChip);
 
-  const idChip = document.createElement('button');
-  idChip.type = 'button';
-  idChip.className = 'filter-chip';
-  idChip.innerHTML = '<span># ID</span>';
-  idChip.addEventListener('click', () => {
-    const id = window.prompt('Filter by gift ID (exact):');
-    onChange({
-      type: 'id',
-      value: id || ''
-    });
-  });
-  bar.appendChild(idChip);
-
-  const priceChip = document.createElement('button');
-  priceChip.type = 'button';
-  priceChip.className = 'filter-chip';
-  priceChip.innerHTML = '<span>Max price</span>';
-  priceChip.addEventListener('click', () => {
-    const price = window.prompt('Max price in TON:');
-    onChange({
-      type: 'maxPrice',
-      value: price || ''
-    });
-  });
-  bar.appendChild(priceChip);
-
   root.appendChild(bar);
 }
 
@@ -87,20 +61,6 @@ export function applyFilters(gifts, filters) {
 
   if (filters.collection && filters.collection !== 'all') {
     res = res.filter((g) => g.collection === filters.collection);
-  }
-
-  if (filters.searchId) {
-    const idNum = parseInt(filters.searchId, 10);
-    if (!Number.isNaN(idNum)) {
-      res = res.filter((g) => g.id === idNum);
-    }
-  }
-
-  if (filters.maxPrice) {
-    const max = Number(filters.maxPrice);
-    if (!Number.isNaN(max) && max > 0) {
-      res = res.filter((g) => g.price <= max);
-    }
   }
 
   if (filters.sort === 'newest') {
