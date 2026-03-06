@@ -4,11 +4,10 @@ import { openConfirmModal, showToast } from '../ui/modal.js';
 import { sendTonTransaction, getCurrentWallet } from '../ton/wallet.js';
 
 const LS_LISTINGS = 'tgifts_market_listings_v1';
-const LS_FAVORITES = 'tgifts_market_favorites_v1';
 const LS_ACTIVITY = 'tgifts_market_activity_v1';
 const LS_OWNED = 'tgifts_market_owned_v1';
 
-// кошелёк владельца маркетплейса (ВАШ)
+// ваш кошелёк
 const MARKET_OWNER_ADDRESS = 'UQDLUQwxUttwdqd4VBOpqAAHwzPH_O7QTCVhCceKuDyh-DKI';
 
 const MOCK_MARKET = [
@@ -62,7 +61,34 @@ export function initMarketPages(root, callbacks) {
   CALLBACKS = { ...CALLBACKS, ...callbacks };
   root.innerHTML = '';
 
-  // только три страницы под новый bottom‑nav
+  // верхние табы вместо нижнего меню
+  const tabs = document.createElement('div');
+  tabs.className = 'top-tabs';
+
+  const tabsConfig = [
+    { id: 'market', label: 'Market' },
+    { id: 'my-gifts', label: 'My gifts' },
+    { id: 'activity', label: 'Activity' }
+  ];
+
+  const tabButtons = {};
+
+  tabsConfig.forEach((t, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'top-tab';
+    if (idx === 0) btn.classList.add('active');
+    btn.dataset.tab = t.id;
+    btn.textContent = t.label;
+    btn.addEventListener('click', () => setActiveTab(t.id));
+    tabButtons[t.id] = btn;
+    tabs.appendChild(btn);
+  });
+
+  root.appendChild(tabs);
+
+  const pagesWrapper = document.createElement('div');
+
   const marketPage = document.createElement('section');
   marketPage.className = 'page active';
   marketPage.dataset.page = 'market';
@@ -79,9 +105,20 @@ export function initMarketPages(root, callbacks) {
   buildMyGiftsPage(myGiftsPage);
   buildActivityPage(activityPage);
 
-  root.appendChild(marketPage);
-  root.appendChild(myGiftsPage);
-  root.appendChild(activityPage);
+  pagesWrapper.appendChild(marketPage);
+  pagesWrapper.appendChild(myGiftsPage);
+  pagesWrapper.appendChild(activityPage);
+
+  root.appendChild(pagesWrapper);
+
+  function setActiveTab(id) {
+    Object.values(tabButtons).forEach((b) => b.classList.remove('active'));
+    if (tabButtons[id]) tabButtons[id].classList.add('active');
+
+    [marketPage, myGiftsPage, activityPage].forEach((p) => {
+      p.classList.toggle('active', p.dataset.page === id);
+    });
+  }
 
   refreshOwnedAndActivity();
 }
@@ -100,12 +137,7 @@ function buildMarketPage(page) {
   left.appendChild(title);
   left.appendChild(subtitle);
 
-  const right = document.createElement('div');
-  right.innerHTML =
-    '<div class="tag-pill"><span>●</span><span>Live offers</span></div>';
-
   header.appendChild(left);
-  header.appendChild(right);
 
   const filtersRoot = document.createElement('div');
   renderFilters(filtersRoot, {
@@ -140,15 +172,12 @@ function renderSkeletonGrid(root) {
     const s1 = document.createElement('div');
     s1.className = 'skeleton skeleton-text';
     s1.style.width = '60px';
-    const s2 = document.createElement('div');
-    s2.className = 'skeleton skeleton-circle';
-    s2.style.width = '22px';
-    s2.style.height = '22px';
     top.appendChild(s1);
-    top.appendChild(s2);
+    card.appendChild(top);
 
     const media = document.createElement('div');
     media.className = 'gift-media skeleton';
+    card.appendChild(media);
 
     const bottom = document.createElement('div');
     bottom.className = 'gift-body';
@@ -170,10 +199,8 @@ function renderSkeletonGrid(root) {
 
     bottom.appendChild(b1);
     bottom.appendChild(b2);
-
-    card.appendChild(top);
-    card.appendChild(media);
     card.appendChild(bottom);
+
     root.appendChild(card);
   }
 }
@@ -198,21 +225,6 @@ function getListingsFromStorage() {
 
 function saveListingsToStorage(listings) {
   localStorage.setItem(LS_LISTINGS, JSON.stringify(listings));
-}
-
-function getFavorites() {
-  try {
-    const raw = localStorage.getItem(LS_FAVORITES);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function setFavorites(ids) {
-  localStorage.setItem(LS_FAVORITES, JSON.stringify(ids));
 }
 
 function getOwned() {
@@ -247,7 +259,6 @@ function setActivity(list) {
 
 function renderMarketGrid(root) {
   const allItems = getAllMarketItems();
-  const favorites = getFavorites();
   const filtered = applyFilters(allItems, CURRENT_FILTERS);
 
   root.innerHTML = '';
@@ -263,22 +274,10 @@ function renderMarketGrid(root) {
 
   filtered.forEach((gift) => {
     const card = createGiftCard(gift, {
-      onBuy: () => handleBuy(gift),
-      onFavoriteToggle: handleFavoriteToggle,
-      isFavorite: favorites.includes(gift.id)
+      onBuy: () => handleBuy(gift)
     });
     root.appendChild(card);
   });
-}
-
-function handleFavoriteToggle(gift, isFav) {
-  const favorites = new Set(getFavorites());
-  if (isFav) {
-    favorites.add(gift.id);
-  } else {
-    favorites.delete(gift.id);
-  }
-  setFavorites(Array.from(favorites));
 }
 
 async function handleBuy(gift) {
@@ -490,13 +489,9 @@ function renderOwnedGrid() {
     return;
   }
 
-  const favorites = getFavorites();
-
   owned.forEach((gift) => {
     const card = createGiftCard(gift, {
-      onBuy: () => {},
-      onFavoriteToggle: handleFavoriteToggle,
-      isFavorite: favorites.includes(gift.id)
+      onBuy: () => {}
     });
     grid.appendChild(card);
   });
