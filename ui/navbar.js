@@ -9,10 +9,7 @@ export function renderNavbar(root, { onTabChange }) {
 
   const items = [
     { id: 'market', icon: '🛒', label: 'Market' },
-    { id: 'auctions', icon: '⏱', label: 'Auctions' },
-    { id: 'lease', icon: '🔄', label: 'Lease' },
     { id: 'my-gifts', icon: '🎁', label: 'My gifts' },
-    { id: 'gallery', icon: '🖼', label: 'Gallery' },
     { id: 'activity', icon: '📜', label: 'Activity' }
   ];
 
